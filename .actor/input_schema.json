@@ -9,6 +9,26 @@
             "description": "Single vehicle ad URL to scrape.",
             "editor": "textfield",
             "prefill": "https://suchen.mobile.de/auto-inserat/porsche-992-911-carrera-gts-cabrio-bose-ha-lenkung-21-bielefeld/444370284.html"
+        },
+        "proxyCountry": {
+            "title": "Proxy country",
+            "type": "string",
+            "description": "Optional ISO country code for Apify Proxy, e.g. DE.",
+            "editor": "textfield",
+            "prefill": "DE"
+        },
+        "proxySessionId": {
+            "title": "Proxy session ID",
+            "type": "string",
+            "description": "Optional fixed session ID to keep one IP/session during retries.",
+            "editor": "textfield",
+            "prefill": "mobile-session-1"
+        },
+        "maxRequestRetries": {
+            "title": "Max request retries",
+            "type": "integer",
+            "description": "How many retries to do if Mobile.de blocks a request.",
+            "default": 4
         }
     },
     "required": ["url"]

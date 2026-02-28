@@ -5,6 +5,9 @@ await Actor.init();
 
 const input = (await Actor.getInput()) ?? {};
 const targetUrl = typeof input.url === 'string' ? input.url.trim() : '';
+const proxyCountry = typeof input.proxyCountry === 'string' ? input.proxyCountry.trim().toUpperCase() : '';
+const proxySessionId = typeof input.proxySessionId === 'string' ? input.proxySessionId.trim() : '';
+const maxRequestRetries = Number.isInteger(input.maxRequestRetries) ? input.maxRequestRetries : 4;
 
 if (!targetUrl) {
     throw new Error('Input "url" is required.');
@@ -15,14 +18,19 @@ if (!/^https?:\/\/suchen\.mobile\.de\//i.test(targetUrl)) {
 }
 
 // Proxy configuration to rotate IP addresses and prevent blocking (https://docs.apify.com/platform/proxy)
-const proxyConfiguration = await Actor.createProxyConfiguration();
+const proxyConfiguration = await Actor.createProxyConfiguration({
+    countryCode: proxyCountry || undefined,
+});
 
 const crawler = new CheerioCrawler({
     proxyConfiguration,
     maxRequestsPerCrawl: 1,
-    maxRequestRetries: 2,
+    maxRequestRetries,
     ignoreHttpErrorStatusCodes: [403],
     useSessionPool: true,
+    sessionPoolOptions: {
+        maxPoolSize: proxySessionId ? 1 : 20,
+    },
     persistCookiesPerSession: true,
     preNavigationHooks: [
         async ({ request }, gotOptions) => {
