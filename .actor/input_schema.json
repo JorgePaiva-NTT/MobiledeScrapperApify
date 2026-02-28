@@ -14,8 +14,7 @@
             "title": "Proxy country",
             "type": "string",
             "description": "Optional ISO country code for Apify Proxy, e.g. DE.",
-            "editor": "textfield",
-            "prefill": "DE"
+            "editor": "textfield"
         },
         "proxySessionId": {
             "title": "Proxy session ID",

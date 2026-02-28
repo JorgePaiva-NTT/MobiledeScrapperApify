@@ -18,9 +18,19 @@ if (!/^https?:\/\/suchen\.mobile\.de\//i.test(targetUrl)) {
 }
 
 // Proxy configuration to rotate IP addresses and prevent blocking (https://docs.apify.com/platform/proxy)
-const proxyConfiguration = await Actor.createProxyConfiguration({
-    countryCode: proxyCountry || undefined,
-});
+let proxyConfiguration;
+try {
+    proxyConfiguration = await Actor.createProxyConfiguration({
+        countryCode: proxyCountry || undefined,
+    });
+} catch (error) {
+    if (proxyCountry) {
+        Actor.log.warning(`Proxy country ${proxyCountry} is not available, falling back to default proxy pool.`);
+        proxyConfiguration = await Actor.createProxyConfiguration();
+    } else {
+        throw error;
+    }
+}
 
 const crawler = new CheerioCrawler({
     proxyConfiguration,
