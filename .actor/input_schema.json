@@ -1,0 +1,15 @@
+{
+    "title": "Input schema of the MobileDeScrapper",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "url": {
+            "title": "Mobile.de vehicle URL",
+            "type": "string",
+            "description": "Single vehicle ad URL to scrape.",
+            "editor": "textfield",
+            "prefill": "https://suchen.mobile.de/auto-inserat/porsche-992-911-carrera-gts-cabrio-bose-ha-lenkung-21-bielefeld/444370284.html"
+        }
+    },
+    "required": ["url"]
+}
