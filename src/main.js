@@ -6,7 +6,7 @@ await Actor.init();
 const input = (await Actor.getInput()) ?? {};
 const targetUrl = typeof input.url === 'string' ? input.url.trim() : '';
 const proxyCountry = typeof input.proxyCountry === 'string' ? input.proxyCountry.trim().toUpperCase() : '';
-const proxySessionId = typeof input.proxySessionId === 'string' ? input.proxySessionId.trim() : '';
+const proxyGroup = typeof input.proxyGroup === 'string' ? input.proxyGroup.trim().toUpperCase() : 'RESIDENTIAL';
 const maxRequestRetries = Number.isInteger(input.maxRequestRetries) ? input.maxRequestRetries : 4;
 
 if (!targetUrl) {
@@ -19,16 +19,34 @@ if (!/^https?:\/\/suchen\.mobile\.de\//i.test(targetUrl)) {
 
 // Proxy configuration to rotate IP addresses and prevent blocking (https://docs.apify.com/platform/proxy)
 let proxyConfiguration;
-try {
-    proxyConfiguration = await Actor.createProxyConfiguration({
-        countryCode: proxyCountry || undefined,
-    });
-} catch (error) {
-    if (proxyCountry) {
-        Actor.log.warning(`Proxy country ${proxyCountry} is not available, falling back to default proxy pool.`);
-        proxyConfiguration = await Actor.createProxyConfiguration();
-    } else {
-        throw error;
+const preferredGroups = proxyGroup === 'DATACENTER' ? ['DATACENTER'] : ['RESIDENTIAL', 'DATACENTER'];
+
+for (const group of preferredGroups) {
+    try {
+        proxyConfiguration = await Actor.createProxyConfiguration({
+            groups: [group],
+            countryCode: proxyCountry || undefined,
+        });
+        console.info(`Using Apify Proxy group: ${group}${proxyCountry ? ` (country: ${proxyCountry})` : ''}`);
+        break;
+    } catch (error) {
+        console.info(`Proxy group ${group} unavailable${proxyCountry ? ` for country ${proxyCountry}` : ''}, trying fallback.`);
+    }
+}
+
+if (!proxyConfiguration) {
+    try {
+        proxyConfiguration = await Actor.createProxyConfiguration({
+            countryCode: proxyCountry || undefined,
+        });
+        console.info('Using default Apify Proxy pool after group fallbacks.');
+    } catch (error) {
+        if (proxyCountry) {
+            console.info(`Proxy country ${proxyCountry} unavailable in default pool, retrying without country.`);
+            proxyConfiguration = await Actor.createProxyConfiguration();
+        } else {
+            throw error;
+        }
     }
 }
 
@@ -38,9 +56,7 @@ const crawler = new CheerioCrawler({
     maxRequestRetries,
     ignoreHttpErrorStatusCodes: [403],
     useSessionPool: true,
-    sessionPoolOptions: {
-        maxPoolSize: proxySessionId ? 1 : 20,
-    },
+    sessionPoolOptions: { maxPoolSize: 30, blockedStatusCodes: [] },
     persistCookiesPerSession: true,
     preNavigationHooks: [
         async ({ request }, gotOptions) => {

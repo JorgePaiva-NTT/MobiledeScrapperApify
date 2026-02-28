@@ -16,12 +16,13 @@
             "description": "Optional ISO country code for Apify Proxy, e.g. DE.",
             "editor": "textfield"
         },
-        "proxySessionId": {
-            "title": "Proxy session ID",
+        "proxyGroup": {
+            "title": "Proxy group",
             "type": "string",
-            "description": "Optional fixed session ID to keep one IP/session during retries.",
-            "editor": "textfield",
-            "prefill": "mobile-session-1"
+            "description": "Preferred Apify Proxy group. Actor will automatically fallback to DATACENTER if the selected group is unavailable.",
+            "editor": "select",
+            "default": "RESIDENTIAL",
+            "enum": ["RESIDENTIAL", "DATACENTER"]
         },
         "maxRequestRetries": {
             "title": "Max request retries",
